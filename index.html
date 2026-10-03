@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloCafe - Receipt & SKU Dashboard</title>
+    <link rel="stylesheet" href="https://pyscript.net">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background-color: #fafdf9; color: #2c3e2e; }
+        
+        .wrapper { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; align-items: flex-start; }
+        
+        .container { max-width: 450px; width: 100%; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
+        
+
+        .matcha-theme border { border: 1px solid #e2ece0; }
+        .matcha-theme h2 { color: #3b5a31; border-bottom: 2px solid #e2ece0; margin-top: 0; padding-bottom: 10px; }
+        .matcha-theme .menu-item { display: flex; align-items: center; margin-bottom: 12px; font-size: 1.05em; cursor: pointer; }
+        .matcha-theme input[type="checkbox"] { margin-right: 12px; width: 18px; height: 18px; cursor: pointer; accent-color: #4f7942; }
+        .matcha-theme button { width: 100%; margin-top: 20px; padding: 12px; font-size: 1em; font-weight: bold; cursor: pointer; background-color: #4f7942; color: white; border: none; border-radius: 6px; transition: background 0.2s; }
+        .matcha-theme button:hover { background-color: #3b5a31; }
+        .matcha-theme .output-box { margin-top: 25px; padding: 15px; border-radius: 6px; border-left: 5px solid #4f7942; background-color: #f3f8f1; display: none; }
+        .matcha-theme .receipt-title { margin: 0 0 10px 0; font-size: 1.2em; color: #3b5a31; text-align: center; border-bottom: 1px dashed #cbdcc5; padding-bottom: 5px; }
+        .matcha-theme .receipt-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .matcha-theme .receipt-total { font-weight: bold; font-size: 1.15em; border-top: 1px solid #cbdcc5; padding-top: 6px; margin-top: 6px; color: #1e3317; }
+
+        .sku-theme { border: 1px solid #f9e2e0; }
+        .sku-theme h2 { color: #9c3f3a; border-bottom: 2px solid #f9e2e0; margin-top: 0; padding-bottom: 10px; }
+        .sku-theme .form-group { margin-bottom: 15px; }
+        .sku-theme label { display: block; margin-bottom: 6px; font-weight: 600; color: #5a2e2c; font-size: 0.95em; }
+        .sku-theme input, .sku-theme select { width: 100%; padding: 10px; border: 1px solid #ebd2d0; border-radius: 6px; box-sizing: border-box; font-size: 1em; color: #2c3e2e; background-color: #fffaf9; }
+        .sku-theme input:focus, .sku-theme select:focus { outline: none; border-color: #f08080; }
+        .sku-theme button { width: 100%; margin-top: 20px; padding: 12px; font-size: 1em; font-weight: bold; cursor: pointer; background-color: #f08080; color: white; border: none; border-radius: 6px; transition: background 0.2s; }
+        .sku-theme button:hover { background-color: #e06d6e; }
+        .sku-theme .output-box { margin-top: 25px; padding: 15px; border-radius: 6px; border-left: 5px solid #f08080; background-color: #fff3f2; display: none; text-align: center; }
+        .sku-theme .sku-title { margin: 0 0 10px 0; font-size: 1.2em; color: #9c3f3a; text-align: center; border-bottom: 1px dashed #ebd2d0; padding-bottom: 5px; }
+        .sku-theme .sku-display { font-size: 1.4em; font-weight: bold; color: #c24141; margin-top: 10px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="container matcha-theme">
+        <h2>🍵 CloCafe Menu</h2>
+        
+        <!-- Matcha Menu Items -->
+        <label class="menu-item"><input type="checkbox" id="item1" value="140"> Matcha Latte - ₱140.00</label>
+        <label class="menu-item"><input type="checkbox" id="item2" value="165"> Matcha Frappe - ₱165.00</label>
+        <label class="menu-item"><input type="checkbox" id="item3" value="180"> Matcha Cheesecake - ₱180.00</label>
+        <label class="menu-item"><input type="checkbox" id="item4" value="120"> Matcha Mochi (3 pcs) - ₱120.00</label>
+        <label class="menu-item"><input type="checkbox" id="item5" value="95"> Matcha Cookies (6 pcs) - ₱95.00</label>
+
+        <button id="btn" py-click="create_order">Generate Receipt</button>
+
+        <div id="show" class="output-box"></div>
+    </div>
+
+    <div class="container sku-theme">
+        <h2>🗂️ SKU Generator</h2>
+        
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category">
+                <option value="Beverages">Beverages</option>
+                <option value="Pastries">Pastries</option>
+                <option value="Desserts">Desserts</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="product_name">Product Name</label>
+            <input type="text" id="product_name" placeholder="e.g., Matcha Latte">
+        </div>
+        
+        <div class="form-group">
+            <label for="quantity">Stock Quantity</label>
+            <input type="number" id="quantity" placeholder="e.g., 50">
+        </div>
+
+        <button id="sku_btn" py-click="SKU_generator">Generate SKU</button>
+
+        <div id="sku_output" class="output-box"></div>
+    </div>
+</div>
+
+<script type="py">
+from pyscript import document
+
+def create_order(e):
+    prod1 = document.getElementById("item1")
+    prod2 = document.getElementById("item2")
+    prod3 = document.getElementById("item3")
+    prod4 = document.getElementById("item4")
+    prod5 = document.getElementById("item5")
+    
+    subtotal = (float(prod1.value) * prod1.checked +
+                float(prod2.value) * prod2.checked +
+                float(prod3.value) * prod3.checked +
+                float(prod4.value) * prod4.checked +
+                float(prod5.value) * prod5.checked)
+                
+    tax_rate = 0.12 
+    tax = subtotal * tax_rate
+    total = subtotal + tax
+    
+    receipt = f"""
+    <div class="receipt-title">==== RECEIPT ====</div>
+    <div class="receipt-row"><span>Subtotal:</span> <span>₱{subtotal:.2f}</span></div>
+    <div class="receipt-row"><span>VAT (12%):</span> <span>₱{tax:.2f}</span></div>
+    <div class="receipt-total"><span>Total Amount:</span> <span>₱{total:.2f}</span></div>
+    """
+    
+    output_div = document.getElementById("show")
+    output_div.innerHTML = receipt
+    output_div.style.display = "block"
+
+def SKU_generator(e):
+    output_div = document.getElementById('sku_output')
+    output_div.innerHTML = ""
+    
+    category = document.getElementById('category').value
+    product_name = document.getElementById('product_name').value.strip()
+    stock_qty = document.getElementById('quantity').value
+    
+    if not product_name or not stock_qty:
+        output_div.innerHTML = "⚠️ Please fill out all fields."
+        output_div.style.display = "block"
+        return
+  
+    sku = category[:3].upper() + "-" + product_name.replace(" ", "")[:4].upper() + "-" + str(stock_qty)
+
+    sku_html = f"""
+    <div class="sku-title">==== SKU GENERATED ====</div>
+    <div class="sku-display">{sku}</div>
+    """
+    output_div.innerHTML = sku_html
+    output_div.style.display = "block"
+</script>
+
+</body>
+</html>
